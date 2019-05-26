@@ -72,12 +72,14 @@ Description:
 void creerEnfantEtLire(int prcNum)
 {
 
+	for (int i = 1; i <= prcNum; i++)
+	{
 		char write_msg[BUFFER_SIZE] = "commence"; 
-		char read_msg[BUFFER_SIZE]; 
+		char read_msg[BUFFER_SIZE];
 		pid_t pid; 
 		int fd[2];
 
-		/* create the pipe */
+			/* create the pipe */
 	if (pipe(fd)  == -1)  { 
 	fprintf(stderr,"Pipe failed") ; 
 	exit(-1); 
@@ -92,20 +94,32 @@ void creerEnfantEtLire(int prcNum)
 		/* close the unused end of the pipe */
 		close(fd[READ_END]) ; 
 		/* write to the pipe */
-		write(fd[WRITE_END], write_msg, strlen(write_msg) +1) ;  
+		write(fd[WRITE_END], write_msg, strlen(write_msg) +1) ;
+ 
 		/* close the write end of the pipe */
 		close(fd[WRITE_END]) ; 
 	} 
 	else {  /* child process */
 		/* close the unused end of the pipe */
 		close(fd[WRITE_END]) ;
-		printf("Processus commence :  %d\n", 1) ;  
+		
 		/* read from the pipe */
 		read(fd[READ_END], read_msg, BUFFER_SIZE) ; 
-		printf("child read ; Processus 2 :  %s\n",read_msg) ; 
+		printf("Processus %d %s\n",i,read_msg) ;
+		sleep(5);  
+		printf("Processus %d termine \n", prcNum-i+1) ;  
 		/* close the write end of the pipe */
-		close(fd[READ_END]) ; 
+		close(fd[READ_END]) ;
+		sleep(10);
+		exit(1); 
 	} 
+
+
+	}
+
+		
+
+	
 
 		
 
