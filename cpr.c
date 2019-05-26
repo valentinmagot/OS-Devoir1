@@ -19,6 +19,11 @@ Explication du processus zombie
 #include <stdlib.h>
 #include <sys/select.h>
 #include <unistd.h>
+#include <sys/types.h> 
+#include <string.h> 
+#define BUFFER_SIZE 25
+#define READ_END 0
+#define WRITE_END 1
 
 /* Prototype */
 void creerEnfantEtLire(int );
@@ -67,65 +72,40 @@ Description:
 void creerEnfantEtLire(int prcNum)
 {
 
-		// int pids[prcNum];
+		char write_msg[BUFFER_SIZE] = "commence"; 
+		char read_msg[BUFFER_SIZE]; 
+		pid_t pid; 
+		int fd[2];
 
-		// int i;
-		// for(i = prcNum; i >=1 ; --i) {
-		// 	int pid = pids[i];
-		// 	pid = fork();
-		// 	if(pid < 0){ /* error occured */
-
-		// 		fprintf(stderr, "Error occured");
-		// 		exit(-1);
-
-		// 	}else if(pid == 0 ){ /*Prcessus enfant*/
-		// 		// sleep(5);
-		// 		// printf("Processus Termine : %d\n",  i);
-		// 		// printf("Had PID %ld\n",(long) getpid());
-		// 		printf("Child Processus Termine: %d\n", i);
-		// 		exit(0);
-
-		// 	}else if (pid > 0) { /*Processuc parent */
-		// 		// printf("Processus Commence : %d\n",  i);
-		// 		// printf("Has PID %ld\n",(long) getpid());
-		// 		// sleep(5);
-		// 		// // wait(NULL);
-		// 		// printf("Processus Termine : %d\n",  i);
-		// 		// printf("Had PID %ld\n",(long) getpid());
-		// 		printf(" Parent Process ");
-		// 		printf(" Processus Commence : %d\n", i);
-		// 		printf(" Processus Termine : %d\n", i);
-		// 		// exit(0); 	
-		// 	}
-
-		// }
-		int pids[prcNum], pipes[prcNum], i;
-		int ret;
-
-		for (int i = prcNum; i > 1; --i)
-		{
-			ret = pipe(pipes[i]);
-			if(ret == - 1) {
-				fprintf(stderr, "Error" );
-				exit(-1);
-			}
-			pids[i] = fork();
-			if(pids[i] == -1){
-				fprintf(stderr, "Error" );
-				exit(-1);
-			} 
-			if(pids[i] == 0) { /*Child fork*/
-				close(pipes[i]);
-			} else { /*Parent fork*/
-				printf("Processus Commence: %d\n", i);
-				close(pipes[i]);
-				sleep(5);
-				printf("Processus Termine %d\n", i);
-
-			}
-		}
-		
-
+		/* create the pipe */
+	if (pipe(fd)  == -1)  { 
+	fprintf(stderr,"Pipe failed") ; 
+	exit(-1); 
+	} 
+	/* now fork a child process */
+	pid = fork() ; 
+	if (pid < 0)  { 
+		fprintf(stderr, "Fork failed") ; 	
+		exit(-1);
+	} 
+	if (pid >  0)  {   /* parent process */
+		/* close the unused end of the pipe */
+		close(fd[READ_END]) ; 
+		/* write to the pipe */
+		write(fd[WRITE_END], write_msg, strlen(write_msg) +1) ;  
+		/* close the write end of the pipe */
+		close(fd[WRITE_END]) ; 
+	} 
+	else {  /* child process */
+		/* close the unused end of the pipe */
+		close(fd[WRITE_END]) ;
+		printf("Processus commence :  %d\n", 1) ;  
+		/* read from the pipe */
+		read(fd[READ_END], read_msg, BUFFER_SIZE) ; 
+		printf("child read ; Processus 2 :  %s\n",read_msg) ; 
+		/* close the write end of the pipe */
+		close(fd[READ_END]) ; 
+	} 
 
 		
 
